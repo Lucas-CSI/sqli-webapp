@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        /* Basic CSS for a clean look */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+
+        .login-container {
+            background: white;
+            padding: 2rem 3rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Important for padding to not affect width */
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #message {
+            margin-top: 1rem;
+            font-weight: 500;
+            min-height: 20px; /* Prevents layout shift when message appears */
+        }
+        
+        #message.success {
+            color: #28a745; /* Green */
+        }
+
+        #message.error {
+            color: #dc3545; /* Red */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="username">Email</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <p id="message"></p>
+    </div>
+
+    <script>
+        // Find the form and message elements in the DOM
+        const loginForm = document.getElementById('loginForm');
+        const messageEl = document.getElementById('message');
+
+        // Add an event listener for the form's 'submit' event
+        loginForm.addEventListener('submit', function(event) {
+            // 1. Prevent the form's default submission behavior (which reloads the page)
+            event.preventDefault();
+
+            // 2. Get the values from the input fields
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // 3. Construct the target URL
+            // window.location.origin gives the base URL (e.g., "http://localhost:5500" or "https://yourdomain.com")
+            // We strip any existing port to safely add our target port, 3000.
+            const baseUrl = window.location.origin.replace(/:\d+$/, '');
+            const targetUrl = `${baseUrl}:3000/level2/login`;
+
+            console.log(`Sending POST request to: ${targetUrl}`);
+            messageEl.textContent = 'Attempting to log in...';
+            messageEl.className = '';
+
+            // 4. Send the POST request using the Fetch API
+            fetch(targetUrl, {
+                method: 'POST',
+                headers: {
+                    // Tell the server we are sending JSON data
+                    'Content-Type': 'application/json'
+                },
+                // Convert the JavaScript object to a JSON string
+                body: JSON.stringify({
+                    email: username,
+                    password: password
+                })
+            })
+            .then(response => {
+                // The server responded. Check if the response was successful (status 200-299)
+                if (!response.ok) {
+                    // If not OK, create an error to be caught by the .catch block
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                // If OK, parse the JSON response body
+                return response.json();
+            })
+            .then(data => {
+                // 5. Handle a successful response from the server
+                console.log('Success:', data);
+                messageEl.textContent = data.message || 'Login successful!'; // Use server message or a default
+                messageEl.className = 'success';
+            })
+            .catch(error => {
+                // 6. Handle errors (network issues, server errors, etc.)
+                console.error('Error:', error);
+                messageEl.textContent = 'Login failed. Check console for details.';
+                messageEl.className = 'error';
+            });
+        });
+    </script>
+
+</body>
+</html>
